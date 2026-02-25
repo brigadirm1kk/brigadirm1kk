@@ -1594,7 +1594,7 @@
                         <div class="product-info">
                             <h3 class="product-name">${product.name || 'Produk'}</h3>
                             <div class="product-price">${formatPrice(product.price || 0)}</div>
-                            <a href="product-detail.html?id=${product.id}" class="product-button"><span>Detail Product</span></a>
+                            <a href="#" onclick="showProductDetail('${product.id}'); return false;" class="product-button"><span>Detail Product</span></a>
                         </div>
                     `;
                     grid.appendChild(card);
@@ -2093,49 +2093,72 @@
             }
         }
         
-        // Update nav links and buttons to use navigateTo
+        // ============================================
+        // UPDATE NAVIGATION - FIXED VERSION
+        // ============================================
+        
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('Initializing navigation...');
+            
             // Update nav links
             document.querySelectorAll('.nav-links a').forEach(link => {
                 const href = link.getAttribute('href');
                 if (href === 'index.html') {
-                    link.onclick = (e) => { e.preventDefault(); navigateTo('home'); };
+                    link.onclick = (e) => { 
+                        e.preventDefault(); 
+                        navigateTo('home'); 
+                    };
                 } else if (href === 'activities.html') {
-                    link.onclick = (e) => { e.preventDefault(); navigateTo('activities'); };
+                    link.onclick = (e) => { 
+                        e.preventDefault(); 
+                        navigateTo('activities'); 
+                    };
                 } else if (href === 'products.html') {
-                    link.onclick = (e) => { e.preventDefault(); navigateTo('products'); };
+                    link.onclick = (e) => { 
+                        e.preventDefault(); 
+                        navigateTo('products'); 
+                    };
                 }
             });
             
-            // Update "All Activities" button
-            setTimeout(() => {
-                const activitiesBtn = document.getElementById('activitiesButton');
-                if (activitiesBtn) {
-                    activitiesBtn.onclick = (e) => {
-                        e.preventDefault();
-                        navigateTo('activities');
-                    };
+            // Function to attach button handlers
+            function attachButtonHandlers() {
+                // "All Activities" button
+                const activitiesBtnDiv = document.getElementById('activitiesButton');
+                if (activitiesBtnDiv) {
+                    const activitiesLink = activitiesBtnDiv.querySelector('a');
+                    if (activitiesLink) {
+                        console.log('Found All Activities button');
+                        activitiesLink.onclick = (e) => {
+                            e.preventDefault();
+                            console.log('All Activities clicked');
+                            navigateTo('activities');
+                        };
+                    }
                 }
-            }, 1000);
-            
-            // Update "All Products" button
-            setTimeout(() => {
-                const productsBtn = document.getElementById('productsButton');
-                if (productsBtn) {
-                    productsBtn.onclick = (e) => {
-                        e.preventDefault();
-                        navigateTo('products');
-                    };
+                
+                // "All Products" button
+                const productsBtnDiv = document.getElementById('productsButton');
+                if (productsBtnDiv) {
+                    const productsLink = productsBtnDiv.querySelector('a');
+                    if (productsLink) {
+                        console.log('Found All Products button');
+                        productsLink.onclick = (e) => {
+                            e.preventDefault();
+                            console.log('All Products clicked');
+                            navigateTo('products');
+                        };
+                    }
                 }
-            }, 1000);
+            }
             
-            // Update "Back to products" links in detail page
-            document.querySelectorAll('a[href="products.html"]').forEach(link => {
-                link.onclick = (e) => {
-                    e.preventDefault();
-                    navigateTo('products');
-                };
-            });
+            // Attach immediately
+            attachButtonHandlers();
+            
+            // Also check after data loads (buttons might be hidden initially)
+            setTimeout(attachButtonHandlers, 1000);
+            setTimeout(attachButtonHandlers, 2000);
+            setTimeout(attachButtonHandlers, 3000);
         });
     </script>
 </body>
