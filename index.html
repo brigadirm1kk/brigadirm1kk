@@ -1234,7 +1234,7 @@
             display: block;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/umd/supabase.js"></script>
 </head>
 <body>
     <!-- 3D Floating Background Shapes -->
@@ -1428,17 +1428,30 @@
 
         // Tunggu Supabase library siap
         function initSupabase() {
-            if (window.supabase && window.supabase.createClient) {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            // Handle both UMD and ESM module exports
+            const supabaseLib = window.supabase || (window.supabaseModule && window.supabaseModule.default);
+            
+            if (supabaseLib && typeof supabaseLib.createClient === 'function') {
+                supabase = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 console.log('Supabase client initialized successfully');
                 return true;
+            } else if (supabaseLib && supabaseLib.createClient) {
+                supabase = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase client initialized successfully (alt method)');
+                return true;
             }
+            console.log('Supabase not ready yet, will retry...', { supabaseLib, createClient: supabaseLib?.createClient });
             return false;
         }
 
         // Try to initialize immediately, otherwise wait for DOM ready
         if (!initSupabase()) {
-            document.addEventListener('DOMContentLoaded', initSupabase);
+            document.addEventListener('DOMContentLoaded', () => {
+                if (!initSupabase()) {
+                    // Final retry after short delay
+                    setTimeout(initSupabase, 500);
+                }
+            });
         }
 
         function formatPrice(price) {
