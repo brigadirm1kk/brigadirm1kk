@@ -1424,7 +1424,22 @@
         const SUPABASE_URL = 'https://kcrooroohcotspstaqbt.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_JD6DFMP2lFjFWYeCYXKK1A_K9Z6k6ai';
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let supabase;
+
+        // Tunggu Supabase library siap
+        function initSupabase() {
+            if (window.supabase && window.supabase.createClient) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase client initialized successfully');
+                return true;
+            }
+            return false;
+        }
+
+        // Try to initialize immediately, otherwise wait for DOM ready
+        if (!initSupabase()) {
+            document.addEventListener('DOMContentLoaded', initSupabase);
+        }
 
         function formatPrice(price) {
             return 'Rp ' + parseInt(price).toLocaleString('id-ID');
