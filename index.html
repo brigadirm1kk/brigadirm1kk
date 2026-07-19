@@ -1234,6 +1234,7 @@
             display: block;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <!-- 3D Floating Background Shapes -->
@@ -1414,48 +1415,16 @@
 
     <script>
 
-        const SPREADSHEET_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQHuoDTekMlHzFQVbMkHIDP8S6cOnmzcs-cGtW2laUnlqtEp9sX77IN0kgYiWQrPUyLH9mmmmWWFVHy/pub';
-        
-        const SHEETS = {
-            config: `${SPREADSHEET_BASE}?gid=0&single=true&output=csv`,
-            hero: `${SPREADSHEET_BASE}?gid=925475388&single=true&output=csv`,
-            activities: `${SPREADSHEET_BASE}?gid=2011666838&single=true&output=csv`,
-            products: `${SPREADSHEET_BASE}?gid=586106354&single=true&output=csv`,
-            about: `${SPREADSHEET_BASE}?gid=1093669165&single=true&output=csv`
-        };
+        // ============================================
+        // SUPABASE CONFIG
+        // Ganti dua nilai di bawah ini dengan Project URL
+        // dan anon public key dari dashboard Supabase kamu
+        // (Settings -> API)
+        // ============================================
+        const SUPABASE_URL = 'sb_publishable_JD6DFMP2lFjFWYeCYXKK1A_K9Z6k6ai';
+        const SUPABASE_ANON_KEY = 'sb_secret_5_IyJKItaRqkAirvrZ4ikQ_kyGza6Qf';
 
-        // IMPROVED CSV PARSER - Handles commas in text
-        function parseCSV(csv) {
-            const lines = csv.trim().split('\n');
-            if (lines.length < 2) return [];
-            
-            const headers = lines[0].split(',').map(h => h.trim());
-            const data = [];
-
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                
-                // Handle quoted fields with commas
-                const regex = /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*|(?:\n|$))/g;
-                const values = [];
-                let match;
-                
-                while ((match = regex.exec(lines[i])) !== null) {
-                    let value = match[1];
-                    if (value.startsWith('"') && value.endsWith('"')) {
-                        value = value.slice(1, -1).replace(/""/g, '"');
-                    }
-                    values.push(value.trim());
-                }
-                
-                const row = {};
-                headers.forEach((header, index) => {
-                    row[header] = values[index] || '';
-                });
-                data.push(row);
-            }
-            return data;
-        }
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         function formatPrice(price) {
             return 'Rp ' + parseInt(price).toLocaleString('id-ID');
@@ -1463,11 +1432,13 @@
 
         async function loadConfig() {
             try {
-                const response = await fetch(SHEETS.config);
-                const csv = await response.text();
-                const data = parseCSV(csv);
-                
-                if (data.length > 0 && data[0].tagline) {
+                const { data, error } = await supabase
+                    .from('site_config')
+                    .select('*')
+                    .limit(1);
+                if (error) throw error;
+
+                if (data && data.length > 0 && data[0].tagline) {
                     document.getElementById('heroTagline').textContent = data[0].tagline;
                 }
             } catch (error) {
@@ -1478,10 +1449,12 @@
 
         async function loadHero() {
             try {
-                const response = await fetch(SHEETS.hero);
-                const csv = await response.text();
-                const images = parseCSV(csv);
-                
+                const { data: images, error } = await supabase
+                    .from('hero_images')
+                    .select('*')
+                    .order('sort_order', { ascending: true });
+                if (error) throw error;
+
                 const slideshow = document.getElementById('slideshow');
                 slideshow.innerHTML = '';
                 
@@ -1525,10 +1498,12 @@
 
         async function loadActivities() {
             try {
-                const response = await fetch(SHEETS.activities);
-                const csv = await response.text();
-                const activities = parseCSV(csv);
-                
+                const { data: activities, error } = await supabase
+                    .from('activities')
+                    .select('*')
+                    .order('sort_order', { ascending: true });
+                if (error) throw error;
+
                 document.getElementById('activitiesLoading').style.display = 'none';
                 
                 const grid = document.getElementById('activitiesGrid');
@@ -1574,10 +1549,12 @@
 
         async function loadProducts() {
             try {
-                const response = await fetch(SHEETS.products);
-                const csv = await response.text();
-                const products = parseCSV(csv);
-                
+                const { data: products, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('sort_order', { ascending: true });
+                if (error) throw error;
+
                 document.getElementById('productsLoading').style.display = 'none';
                 
                 const grid = document.getElementById('productsGrid');
@@ -1624,10 +1601,12 @@
 
         async function loadAbout() {
             try {
-                const response = await fetch(SHEETS.about);
-                const csv = await response.text();
-                const data = parseCSV(csv);
-                
+                const { data, error } = await supabase
+                    .from('about')
+                    .select('*')
+                    .limit(1);
+                if (error) throw error;
+
                 document.getElementById('aboutLoading').style.display = 'none';
                 
                 if (data.length > 0) {
@@ -1870,10 +1849,12 @@
             if (!gridEl) return;
             
             try {
-                const response = await fetch(SHEETS.activities);
-                const csv = await response.text();
-                const activities = parseCSV(csv);
-                
+                const { data: activities, error } = await supabase
+                    .from('activities')
+                    .select('*')
+                    .order('sort_order', { ascending: true });
+                if (error) throw error;
+
                 if (loadingEl) loadingEl.style.display = 'none';
                 
                 gridEl.innerHTML = '';
@@ -1928,10 +1909,12 @@
             if (!gridEl) return;
             
             try {
-                const response = await fetch(SHEETS.products);
-                const csv = await response.text();
-                const products = parseCSV(csv);
-                
+                const { data: products, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('sort_order', { ascending: true });
+                if (error) throw error;
+
                 if (loadingEl) loadingEl.style.display = 'none';
                 
                 gridEl.innerHTML = '';
@@ -1983,32 +1966,30 @@
         
         // Load product detail (from product-detail.html logic)
         async function loadProductDetail(productId) {
-            const PRODUCTS_URL = SHEETS.products;
-            const ABOUT_URL = SHEETS.about;
-            
             try {
                 if (!productId) {
                     throw new Error('ID produk tidak ditemukan');
                 }
 
-                // Load products
-                const productsResponse = await fetch(PRODUCTS_URL);
-                const productsCSV = await productsResponse.text();
-                const products = parseCSV(productsCSV);
+                // Load product by id
+                const { data: product, error: productError } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('id', productId)
+                    .single();
 
-                const product = products.find(p => p.id === productId);
-
-                if (!product) {
+                if (productError || !product) {
                     throw new Error('Produk tidak ditemukan');
                 }
 
-                // Load WhatsApp number from About sheet
+                // Load WhatsApp number from about table
                 let whatsappNumber = '6281234567890'; // Default
                 try {
-                    const aboutResponse = await fetch(ABOUT_URL);
-                    const aboutCSV = await aboutResponse.text();
-                    const aboutData = parseCSV(aboutCSV);
-                    if (aboutData.length > 0 && aboutData[0].whatsapp) {
+                    const { data: aboutData, error: aboutError } = await supabase
+                        .from('about')
+                        .select('whatsapp')
+                        .limit(1);
+                    if (!aboutError && aboutData && aboutData.length > 0 && aboutData[0].whatsapp) {
                         whatsappNumber = aboutData[0].whatsapp;
                     }
                 } catch (e) {
